@@ -7,11 +7,23 @@ require_once 'functions.php';
 $config = require_once 'config.php';
 
 
-
 // Подключение к БД
 $db = Db::getInstance()->getConnection($config['db']);
 
 
+$uri = trim($_SERVER['REQUEST_URI']);
+$id = getId();
+
+
+function getId() {
+    global $uri;
+    $params = explode('?', $uri);
+    $arr = explode('/', $params[0]);
+    $id = (int)$arr[1];
+    return $id;
+}
+
+// Отображение всех персонажей
 function index() {
     global $db;
     global $config;
@@ -22,20 +34,108 @@ function index() {
     $start = $pagination->get_start();
 
     $characters = $db->query(
-        "SELECT image, character_name, character_status, species, gender, location_name FROM characters
-        LEFT JOIN locations ON characters.location_id = locations.location_id
+        "SELECT image,
+        character_id,
+        character_name,
+        character_status,
+        species, gender,
+        location_name
+        FROM
+            characters
+        LEFT JOIN
+            locations ON characters.location_id = locations.location_id
         LIMIT {$start}, {$config['per_page']}")->findAll();
     extract($characters);
+
     require_once "views/index.tpl.php";
 
 
 }
 
+// Отображение информации о персонаже
+function show($id) {
+    global $db;
+
+    $character = $db->query(
+        "SELECT
+        image,
+        character_name,
+        character_status,
+        species, gender,character_type,
+        location_name,
+        location_url,
+        character_name,
+        episodes.episode_name
+        FROM 
+            characters
+        LEFT JOIN
+            locations ON characters.location_id = locations.location_id
+        JOIN
+            character_episode ON characters.character_id = character_episode.character_id
+        JOIN
+            episodes ON character_episode.episode_id = episodes.episode_id
+        WHERE characters.character_id = $id")->find();
+
+    $episodes = $db->query(
+        "SELECT
+        image,
+        episodes.episode_id, 
+        episodes.episode_name,
+        episode,
+        episode_created,
+        episodes.episode_url 
+        FROM 
+            characters
+        JOIN
+            character_episode ON characters.character_id = character_episode.character_id
+        JOIN
+            episodes  ON character_episode.episode_id = episodes.episode_id
+        WHERE characters.character_id = $id")->findAll();
+
+    require_once "views/show.tpl.php";
+}
 
 
 
-index();
 
+if ($uri === '') {
+    index();
+} elseif (!empty($id)) {
+    show($id);
+} else {
+    index();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// SELECT
+// 	image,
+//     character_name,
+// 	character_status,
+// 	species, gender,character_type,
+// 	location_name,
+// 	location_url,
+// 	episode_name, 
+// 	episode_url 
+// 	FROM 
+// 		characters
+// 	LEFT JOIN
+// 		locations ON characters.location_id = locations.location_id
+// 	LEFT JOIN
+// 		character_episode ON characters.character_id = episodes.episode_id
+// 	WHERE characters.character_id = 1;
 
 
 
