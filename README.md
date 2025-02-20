@@ -1,7 +1,7 @@
 # :rocket: Notice
 
 <p align="center">
-<img src="logo.png">
+<img src="/img/logo.png">
 </p>
 
 ## :link: [Перейти на сайт](http://f1087222.xsph.ru/)
@@ -38,3 +38,18 @@
 
 
 </details>
+
+### Список персонажей
+<p align="center">
+    <img  src="/img/characters.png" title="Главная">
+</p>
+
+### Детально
+<p align="center">
+    <img  src="/img/detail.png" title="Подробнее">
+</p>
+
+### Персонажи excel
+<p align="center">
+    <img  src="/img/excel.png" title="exel">
+</p>

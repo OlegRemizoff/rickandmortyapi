@@ -15,6 +15,7 @@ $uri = trim($_SERVER['REQUEST_URI']);
 $id = getId();
 
 
+// Получение id для передачи в функцию show
 function getId() {
     global $uri;
     $params = explode('?', $uri);
@@ -45,7 +46,7 @@ function index() {
         LEFT JOIN
             locations ON characters.location_id = locations.location_id
         LIMIT {$start}, {$config['per_page']}")->findAll();
-    extract($characters);
+
 
     require_once "views/index.tpl.php";
 
@@ -58,14 +59,14 @@ function show($id) {
 
     $character = $db->query(
         "SELECT
-        image,
-        character_name,
-        character_status,
-        species, gender,character_type,
-        location_name,
-        location_url,
-        character_name,
-        episodes.episode_name
+            image,
+            character_name,
+            character_status,
+            species, gender,character_type,
+            location_name,
+            location_url,
+            character_name,
+            episodes.episode_name
         FROM 
             characters
         LEFT JOIN
@@ -96,6 +97,68 @@ function show($id) {
 }
 
 
+// Формирование excel для персонажей
+function getCharacterExcel() {
+    global $db;
+    
+    $characters_all = $db->query(
+        "SELECT 
+            characters.character_name,
+            characters.character_status,
+            characters.species,
+            characters.gender,
+            locations.location_name,
+            locations.location_url,
+            GROUP_CONCAT(episodes.episode ORDER BY episodes.episode_id SEPARATOR ', ') AS episodes
+        FROM
+            characters
+        LEFT JOIN
+            locations ON characters.location_id = locations.location_id
+        JOIN
+            character_episode ON characters.character_id = character_episode.character_id
+        JOIN
+            episodes ON character_episode.episode_id = episodes.episode_id
+        GROUP BY
+            characters.character_id,
+            characters.character_name,
+            characters.character_status,
+            characters.species,
+            characters.gender,
+            locations.location_name,
+            locations.location_url;")->findAll();
+
+    $fp = fopen('characters_all.csv', 'w');
+    $headers = [
+        'Имя персонажа',
+        'Статус',
+        'Вид',
+        'Пол',
+        'Локация',
+        'URL локации',
+        'Эпизоды'
+    ];
+    fputcsv($fp, $headers, ',', '"', '');
+
+    foreach ($characters_all as $character) {
+        $fields = [
+            $character['character_name'],
+            $character['character_status'],
+            $character['species'],
+            $character['gender'],
+            $character['location_name'],
+            $character['location_url'],
+            $character['episodes']
+        ];
+        fputcsv($fp, $fields, ',', '"', '');
+    }
+    
+    fclose($fp);
+}
+if (!file_exists('characters_all.csv')) {
+    getCharacterExcel();
+}
+
+
 
 
 if ($uri === '') {
@@ -108,55 +171,8 @@ if ($uri === '') {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-// SELECT
-// 	image,
-//     character_name,
-// 	character_status,
-// 	species, gender,character_type,
-// 	location_name,
-// 	location_url,
-// 	episode_name, 
-// 	episode_url 
-// 	FROM 
-// 		characters
-// 	LEFT JOIN
-// 		locations ON characters.location_id = locations.location_id
-// 	LEFT JOIN
-// 		character_episode ON characters.character_id = episodes.episode_id
-// 	WHERE characters.character_id = 1;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/*Заполнение БД
+****************************************** */
 
 // Получение всех персонажей
 function getAllCharacters() {
