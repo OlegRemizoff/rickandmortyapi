@@ -10,7 +10,7 @@
 - **SQL**
 - **~~Laravel~~** 
 
-#### Тестовое Laravel Middle
+### Тестовое Laravel Middle
 <details>
 <summary>Нажмите, чтобы посмотреть подробности</summary>
 
@@ -38,6 +38,10 @@
 
 
 </details>
+
+
+ <br />
+
 
 ### Список персонажей
 <p align="center">
